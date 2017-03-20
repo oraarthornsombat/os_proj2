@@ -20,7 +20,6 @@ int num_threads;
 
 //This function will be called from a thread
 void call_from_thread(int thread_num) {
-    int fastptr = 0;
     i = 0;
     int index=0;
     cout << "Launched by thread "<< thread_num << "\n";
