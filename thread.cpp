@@ -12,6 +12,7 @@ or gcc thread.cpp -std=c++11 -lpthread -lstdc++ */
 
 /********** GLOBAL VARIABLES ***********/
 int arr [4096];
+int newarr[4096];
 int arrcount =0;
 int i=0;
 int maxnum=0;
@@ -21,18 +22,25 @@ int num_threads;
 void call_from_thread(int thread_num) {
     int fastptr = 0;
     i = 0;
+    int index=0;
     cout << "Launched by thread "<< thread_num << "\n";
-    maxnum = 0;
+ 
     for (i = 0; i< arrcount ; i+=2){
-        cout << i << endl;
-        if (arr[i] > arr[i+1]){
-            cout << arr[i] << endl;
-            maxnum = arr[i];
-        } else {
-            cout << arr[i] << endl;
-            maxnum = arr[i+1];
+        maxnum = 0;
+        if (i == thread_num * 2){
+            //cout << i << "thread: "<< thread_num * 2<< endl;
+            if (arr[i] > arr[i+1]){
+                maxnum = arr[i];
+            } else {
+                maxnum = arr[i+1];
+            }
+            //cout << maxnum;
+            newarr[index] = maxnum;
         }
-        i+=2;
+        index++;
+    }
+    for (i=0; i<5; i++){
+        cout << newarr[i] << endl;
     }
     
    
@@ -65,7 +73,7 @@ int main(int argc, char *argv[]) {
         }
         myfile.close();
         num_threads = arrcount/2;
-        cout << num_threads;
+        //cout << num_threads;
     }
 
     else {
