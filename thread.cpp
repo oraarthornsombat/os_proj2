@@ -16,18 +16,18 @@ int newarr[4096];
 int arrcount =0;
 int i=0;
 int maxnum=0;
-int num_threads;
+int number_of_threads;
 
 //This function will be called from a thread
-void call_from_thread(int thread_num) {
+void call_from_thread(int thread_id) {
     i = 0;
     int index=0;
-    cout << "Launched by thread "<< thread_num << "\n";
+    cout << "Launched by thread "<< thread_id << "\n";
  
     for (i = 0; i< arrcount ; i+=2){
         maxnum = 0;
-        if (i == thread_num * 2){
-            //cout << i << "thread: "<< thread_num * 2<< endl;
+        if (i == thread_id * 2){
+            //cout << i << "thread: "<< thread_id * 2<< endl;
             if (arr[i] > arr[i+1]){
                 maxnum = arr[i];
             } else {
@@ -38,17 +38,10 @@ void call_from_thread(int thread_num) {
         }
         index++;
     }
-    for (i=0; i<5; i++){
+    for (i=0; i<number_of_threads; i++){
         cout << newarr[i] << endl;
     }
     
-   
-    // for (i =0; i<arrcount ; i++){
-    //     if (arr[i] > maxnum){
-    //         maxnum = arr[i];
-    //     }
-        
-    // }
 }
 
 
@@ -71,8 +64,8 @@ int main(int argc, char *argv[]) {
           arrcount = i;
         }
         myfile.close();
-        num_threads = arrcount/2;
-        //cout << num_threads;
+        number_of_threads = arrcount/2;
+        //cout << number_of_threads;
     }
 
     else {
@@ -82,10 +75,10 @@ int main(int argc, char *argv[]) {
 
  
 /*********** THREADS  ***************/
-    std::thread t[num_threads];
+    std::thread t[number_of_threads];
 
     //Launch a group of threads
-    for (int i = 0; i < num_threads; ++i) {
+    for (int i = 0; i < number_of_threads; ++i) {
         t[i] = std::thread(call_from_thread, i);
 
     }
@@ -93,7 +86,7 @@ int main(int argc, char *argv[]) {
     //cout << "Launched from the main\n";
 
     //Join the threads with the main thread
-    for (int i = 0; i < num_threads; ++i) {
+    for (int i = 0; i < number_of_threads; ++i) {
         t[i].join();
     }
 
