@@ -27,14 +27,39 @@ bool arr_is_all_zero = false;
 bool new_arr_is_all_zero = true;
 // std::mutex mtx; // mutex for critical section
 // std::condition_variable cv; //condition variable for critical section
-// int current_count = 0; //current count to compare with condition variable
+int count; //current count of running threads
 sem_t sem_main;
+pthread_mutex_t mutex;
+pthread_cond_t ready_for_next_run;
+
+
+void barrier_function(){
+    //lock the mutex
+    cout <<"in barrier";
+   // cout<<count<<endl;
+    pthread_mutex_lock(&mutex);
+    if (count >0){
+        cout << "in here";
+
+         count--;
+         cout << count << endl;
+         while(count!=0){
+            cout << "here now...infinitely" << endl;
+             pthread_cond_wait(&ready_for_next_run, &mutex);
+         }
+    }
+    pthread_cond_broadcast(&ready_for_next_run);
+    sem_post(&sem_main);
+    pthread_mutex_unlock(&mutex);
+    //pthread_exit(NULL);
+
+}
 
 //This function will be called from a thread
 void * call_from_thread(void * thread_id) {
     i = 0;
     int index=0;
-    cout << "Launched by thread "<< (int)thread_id << "\n";
+    //cout << "Launched by thread "<< (int)thread_id << "\n";
  
     if (arr_is_all_zero == false){
         //array 1 (arr) has the values. write result of comparison to array 2 (newarr).
@@ -97,16 +122,19 @@ void * call_from_thread(void * thread_id) {
     }
 
 
-    for (i=0; i<number_of_threads; i++){
-        cout << "new arr "<< newarr[i] << endl;
-       // cout << "arr2 should be 0: "<<new_arr_is_all_zero << endl;
-    }
+    // for (i=0; i<number_of_threads; i++){
+    //     cout << "new arr "<< newarr[i] << endl;
+    //    // cout << "arr2 should be 0: "<<new_arr_is_all_zero << endl;
+    // }
     // for (i=0; i<number_of_integers;i++){
     // //     cout << arr[i] << "should be 0 for 1st run" << endl;
     // //    // cout << "arr should be 1: "<<arr_is_all_zero << endl;
     //     cout << "arr "<< arr[i] << endl;
     // }
-    return NULL;
+    //cout << count <<endl;
+    barrier_function();
+    //sem_post(&sem_main);
+    pthread_exit(NULL);
 }
 
 
@@ -139,28 +167,32 @@ int main(int argc, char *argv[]) {
 /*********** THREADS  ***************/
 
     number_of_threads = number_of_integers / 2;
-    cout << double(number_of_integers) << endl;
-    cout << log2(number_of_integers);
-    cout << number_of_runs;
+    number_of_runs = log2(number_of_integers);
     //std::thread t[number_of_threads];
     pthread_t t[number_of_threads];
     sem_init(&sem_main, 0,0);
+    pthread_mutex_init(&mutex, NULL);
+    pthread_cond_init(&ready_for_next_run, NULL);
    
     //Launch a group of threads
-    for (int i = 0; i < number_of_threads; ++i) {
-        //t[i] = std::thread(call_from_thread, i);
-        pthread_create(&t[i], NULL, call_from_thread, (void *) i);
-        //  cout << "arr is zero? " << arr_is_all_zero << endl;
-        // cout << "new_arr is zero? " << new_arr_is_all_zero << endl;
+    for (int j=0; j<number_of_runs; j++){
+        for (int i = 0; i < number_of_threads; ++i) {
+            //t[i] = std::thread(call_from_thread, i);
+            pthread_create(&t[i], NULL, call_from_thread, (void *) i);
+            sem_wait(&sem_main);
+            count = number_of_threads;
+            //  cout << "arr is zero? " << arr_is_all_zero << endl;
+            // cout << "new_arr is zero? " << new_arr_is_all_zero << endl;
 
+        }
     }
 
     //Change this later
     //Join the threads with the main thread
-    for (int i = 0; i < number_of_threads; ++i) {
-        //t[i].join();
-        pthread_join(t[i], NULL);
-    }
+    // for (int i = 0; i < number_of_threads; ++i) {
+    //     //t[i].join();
+    //     pthread_join(t[i], NULL);
+    // }
 
 
    // cout << "Max is " << maxnum << "\n";
