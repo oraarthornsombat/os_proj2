@@ -2,6 +2,8 @@
 #include <thread>
 #include <string>
 #include <fstream>
+#include <mutex>
+#include <condition_variable>
 
 using namespace std;
 
@@ -17,6 +19,9 @@ int arrcount =0;
 int i=0;
 int maxnum=0;
 int number_of_threads;
+std::mutex mtx; // mutex for critical section
+std::condition_variable cv; //condition variable for critical section
+int current = 0; //current count to compare with condition variable
 
 //This function will be called from a thread
 void call_from_thread(int thread_id) {
@@ -64,7 +69,7 @@ int main(int argc, char *argv[]) {
           arrcount = i;
         }
         myfile.close();
-        number_of_threads = arrcount/2;
+        //number_of_threads = arrcount/2;
         //cout << number_of_threads;
     }
 
@@ -75,6 +80,9 @@ int main(int argc, char *argv[]) {
 
  
 /*********** THREADS  ***************/
+
+    /****** Critical section?? *********/
+    number_of_threads = arrcount / 2;
     std::thread t[number_of_threads];
 
     //Launch a group of threads
@@ -83,14 +91,16 @@ int main(int argc, char *argv[]) {
 
     }
 
-    //cout << "Launched from the main\n";
-
+    //Change this later
     //Join the threads with the main thread
     for (int i = 0; i < number_of_threads; ++i) {
         t[i].join();
     }
 
-    cout << "Max is " << maxnum << "\n";
+    /*** End critical section?? ***/
+
+
+   // cout << "Max is " << maxnum << "\n";
 
     return 0;
 }
