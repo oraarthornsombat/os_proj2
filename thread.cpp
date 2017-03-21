@@ -2,6 +2,8 @@
 #include <thread>
 #include <string>
 #include <fstream>
+#include <pthread.h>
+#include <semaphore.h>
 #include <mutex>
 #include <condition_variable>
 
@@ -24,12 +26,13 @@ bool array2zero = true;
 std::mutex mtx; // mutex for critical section
 std::condition_variable cv; //condition variable for critical section
 int current_count = 0; //current count to compare with condition variable
+sem_t sem;
 
 //This function will be called from a thread
-void call_from_thread(int thread_id) {
+void * call_from_thread(void * thread_id) {
     i = 0;
     int index=0;
-    cout << "Launched by thread "<< thread_id << "\n";
+    cout << "Launched by thread "<< (int)thread_id << "\n";
  
     if (array1zero == false){
         //array 1 (arr) has the values. write result of comparison to array 2 (newarr).
@@ -37,7 +40,7 @@ void call_from_thread(int thread_id) {
             maxnum = 0;
             /*figure out which index to look at (thread 0 at index 0, thread 1 at index 2, 
             thread 2 at index 4, etc.) */
-            if (i == thread_id * 2){
+            if (i == (int)thread_id * 2){
                 //cout << i << "thread: "<< thread_id * 2<< endl;
                 if (arr[i] > arr[i+1]){
                     maxnum = arr[i];
@@ -67,7 +70,7 @@ void call_from_thread(int thread_id) {
             maxnum = 0;
             /*figure out which index to look at (thread 0 at index 0, thread 1 at index 2, 
             thread 2 at index 4, etc.) */
-            if (i == thread_id * 2){
+            if (i == int(thread_id) * 2){
                 //cout << i << "thread: "<< thread_id * 2<< endl;
                 if (newarr[i] > newarr[i+1]){
                     maxnum = newarr[i];
@@ -93,14 +96,15 @@ void call_from_thread(int thread_id) {
 
 
     for (i=0; i<number_of_threads; i++){
-        cout << newarr[i] << endl;
+        cout << "new arr "<< newarr[i] << endl;
        // cout << "arr2 should be 0: "<<array2zero << endl;
     }
-    // for (i=0; i<arrcount;i++){
+    for (i=0; i<arrcount;i++){
     //     cout << arr[i] << "should be 0 for 1st run" << endl;
     //    // cout << "arr should be 1: "<<array1zero << endl;
-    // }
-    
+        cout << "arr "<< arr[i] << endl;
+    }
+    return NULL;
 }
 
 
@@ -132,13 +136,15 @@ int main(int argc, char *argv[]) {
  
 /*********** THREADS  ***************/
 
-    /****** Critical section?? *********/
     number_of_threads = arrcount / 2;
-    std::thread t[number_of_threads];
-
+    //std::thread t[number_of_threads];
+    pthread_t t[number_of_threads];
+    sem_init(&sem, 0,0);
+   
     //Launch a group of threads
     for (int i = 0; i < number_of_threads; ++i) {
-        t[i] = std::thread(call_from_thread, i);
+        //t[i] = std::thread(call_from_thread, i);
+        pthread_create(&t[i], NULL, call_from_thread, (void *) i);
         //  cout << "arr is zero? " << array1zero << endl;
         // cout << "new_arr is zero? " << array2zero << endl;
 
@@ -147,10 +153,9 @@ int main(int argc, char *argv[]) {
     //Change this later
     //Join the threads with the main thread
     for (int i = 0; i < number_of_threads; ++i) {
-        t[i].join();
+        //t[i].join();
+        pthread_join(t[i], NULL);
     }
-
-    /*** End critical section?? ***/
 
 
    // cout << "Max is " << maxnum << "\n";
