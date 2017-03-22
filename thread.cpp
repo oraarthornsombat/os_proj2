@@ -41,12 +41,8 @@ void barrier_function(){
         cout << "number of integers to compare: "<< number_of_integers << endl;
         cout << "count: "<<count<<endl;
     if (count > 0){
-        cout << "in here";
-
          count--;
-     
          while (count!=0){
-            cout << "here now...infinitely" << endl;
              pthread_cond_wait(&ready_for_next_run, &mutex);
          }
     }
@@ -177,9 +173,12 @@ int main(int argc, char *argv[]) {
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&ready_for_next_run, NULL);
    
+
+    pthread_create(&t[0], NULL, call_from_thread, NULL);
+
     //Launch a group of threads
     for (int j=0; j<number_of_runs; j++){
-        for (int i = 0; i < number_of_threads; ++i) {
+        for (int i = 1; i < number_of_threads+1; ++i) {
             //t[i] = std::thread(call_from_thread, i);
             pthread_create(&t[i], NULL, call_from_thread, (void *) i);
             sem_wait(&sem_main);
