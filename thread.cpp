@@ -35,15 +35,17 @@ pthread_cond_t ready_for_next_run;
 
 void barrier_function(){
     //lock the mutex
-    cout <<"in barrier";
    // cout<<count<<endl;
     pthread_mutex_lock(&mutex);
-    if (count >0){
+        cout << "number of threads: "<< number_of_threads << endl;
+        cout << "number of integers to compare: "<< number_of_integers << endl;
+        cout << "count: "<<count<<endl;
+    if (count > 0){
         cout << "in here";
 
          count--;
-         cout << count << endl;
-         while(count!=0){
+     
+         while (count!=0){
             cout << "here now...infinitely" << endl;
              pthread_cond_wait(&ready_for_next_run, &mutex);
          }
@@ -76,7 +78,7 @@ void * call_from_thread(void * thread_id) {
                 }
                 newarr[index] = maxnum;
             }
-
+       
             index++;
         }
         // if (thread_id ==0){
@@ -109,6 +111,7 @@ void * call_from_thread(void * thread_id) {
 
             index++;
         }
+
         // if (thread_id ==0){
         //     //last thread of the current run to come through
         //     for (i=0; i<number_of_integers;i++){
@@ -121,7 +124,7 @@ void * call_from_thread(void * thread_id) {
         // }
     }
 
-
+    //printing
     // for (i=0; i<number_of_threads; i++){
     //     cout << "new arr "<< newarr[i] << endl;
     //    // cout << "arr2 should be 0: "<<new_arr_is_all_zero << endl;
@@ -180,6 +183,8 @@ int main(int argc, char *argv[]) {
             //t[i] = std::thread(call_from_thread, i);
             pthread_create(&t[i], NULL, call_from_thread, (void *) i);
             sem_wait(&sem_main);
+            number_of_integers = number_of_integers/2;
+            number_of_threads=number_of_integers/2;
             count = number_of_threads;
             //  cout << "arr is zero? " << arr_is_all_zero << endl;
             // cout << "new_arr is zero? " << new_arr_is_all_zero << endl;
