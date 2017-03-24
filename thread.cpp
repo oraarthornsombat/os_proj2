@@ -5,8 +5,6 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <cmath>
-// #include <mutex>
-// #include <condition_variable>
 
 using namespace std;
 
@@ -31,14 +29,14 @@ void barrier_function(){
     //lock the mutex
     pthread_mutex_lock(&mutex);
     if (count > 0){
-         count--;
-         while (count!=0){
-             pthread_cond_wait(&ready_for_next_run, &mutex);
-         }
-    } else {
-    	exit(0);
-    }
-    pthread_cond_broadcast(&ready_for_next_run);
+        count--;
+        while (count!=0){
+            pthread_cond_wait(&ready_for_next_run, &mutex);
+        }
+        if (count==0){
+            pthread_cond_broadcast(&ready_for_next_run);
+        }
+    } 
     sem_post(&sem_main);
     pthread_mutex_unlock(&mutex);
 
